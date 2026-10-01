@@ -17,9 +17,12 @@
      >>> algún día se publica una implementación NUEVA (no una versión
      >>> nueva de la misma), la dirección cambia y hay que actualizarla aquí.
 
-     ARCHIVOS QUE ACOMPAÑAN A ESTE: icono-180.png e icono-512.png, los dos
-     en la misma carpeta. Sin ellos, iPhone pone un cuadro gris con la
-     inicial del título.
+     ARCHIVOS QUE ACOMPAÑAN A ESTE, todos en la misma carpeta:
+       icono-180.png ........ el que usa iPhone
+       icono-192.png ........ el que usa Android
+       icono-512.png ........ el grande, para las dos
+       manifest.webmanifest . el que hace que Android tome el icono y el nombre
+     Sin ellos, el teléfono pone un cuadro gris con la inicial del título.
 
      Se pide a los buscadores que NO lo indexen: es una herramienta interna.
      Eso no la protege —la protege el PIN— pero evita que ande de paseo.
@@ -32,6 +35,13 @@
 <link rel="apple-touch-icon" href="icono-180.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icono-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icono-180.png">
+
+<!-- ANDROID. Chrome NO usa el apple-touch-icon: saca el icono y el nombre de
+     este archivo. Sin él, el acceso en la pantalla de inicio sale con la
+     inicial en un círculo gris, igual que pasaba en el iPhone.
+     Ahí dentro está start_url = "/", que es lo que abre el acceso: así el
+     icono entra directo al sistema aunque se haya agregado desde ?fijar. -->
+<link rel="manifest" href="manifest.webmanifest">
 
 <!-- El nombre debajo del icono. iPhone corta como a los 12 caracteres, así que
      "Sistema de Gestión Sveltia" se vería "Sistema de G…". -->
