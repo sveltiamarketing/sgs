@@ -1,166 +1,445 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sistema de Gestión Sveltia</title>
-
-<!-- =====================================================================
-     ATAJO sgs.sveltia.mx  →  Sistema de Gestión (Apps Script)
-
-     >>> LO ÚNICO QUE SE EDITA DE ESTE ARCHIVO ES EL href DEL BOTÓN "Entrar"
-     >>> (búscalo abajo: id="ir"). Está en UN solo lugar a propósito, y de ahí
-     >>> lo lee también el salto automático: así no existe la posibilidad de
-     >>> cambiar uno y olvidar el otro.
-     >>> Tiene que ser EXACTAMENTE lo que dice la clave URL_APP de la hoja
-     >>> Config del Sistema de Gestión. Esa es la fuente de la verdad: si
-     >>> algún día se publica una implementación NUEVA (no una versión
-     >>> nueva de la misma), la dirección cambia y hay que actualizarla aquí.
-
-     ARCHIVOS QUE ACOMPAÑAN A ESTE, todos en la misma carpeta:
-       icono-180.png ........ el que usa iPhone
-       icono-192.png ........ el que usa Android
-       icono-512.png ........ el grande, para las dos
-       manifest.webmanifest . el que hace que Android tome el icono y el nombre
-     Sin ellos, el teléfono pone un cuadro gris con la inicial del título.
-
-     Se pide a los buscadores que NO lo indexen: es una herramienta interna.
-     Eso no la protege —la protege el PIN— pero evita que ande de paseo.
-     ===================================================================== -->
-<meta name="robots" content="noindex, nofollow">
-<meta name="referrer" content="no-referrer">
-
-<!-- El icono del teléfono. iPhone pide exactamente 180x180 y SIN transparencia:
-     lo transparente se le vuelve negro al aplicar la esquina redondeada. -->
-<link rel="apple-touch-icon" href="icono-180.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icono-512.png">
-<link rel="icon" type="image/png" sizes="180x180" href="icono-180.png">
-
-<!-- ANDROID. Chrome NO usa el apple-touch-icon: saca el icono y el nombre de
-     este archivo. Sin él, el acceso en la pantalla de inicio sale con la
-     inicial en un círculo gris, igual que pasaba en el iPhone.
-     Ahí dentro está start_url = "/", que es lo que abre el acceso: así el
-     icono entra directo al sistema aunque se haya agregado desde ?fijar. -->
-<link rel="manifest" href="manifest.webmanifest">
-
-<!-- El nombre debajo del icono. iPhone corta como a los 12 caracteres, así que
-     "Sistema de Gestión Sveltia" se vería "Sistema de G…". -->
-<meta name="apple-mobile-web-app-title" content="Sveltia">
-<meta name="application-name" content="Sveltia">
-<meta name="theme-color" content="#4A9D2C">
-
-<!-- Esto es lo que permite distinguir, desde el código, si la página se abrió
-     desde el icono de la pantalla de inicio o desde Safari. Ver más abajo. -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sveltia · Registro de expo</title>
+<meta name="description" content="Déjanos tus datos y te enviamos las fichas técnicas de los equipos que te interesaron.">
+<meta name="robots" content="noindex">
 <style>
-  :root { --gris: #5B5B5E; --verde: #4A9D2C; }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
+  /* ------------------------------------------------------------------
+     La página vive sola: no carga tipografías, ni librerías, ni nada de
+     fuera. En un congreso el wifi es malo y el 4G está saturado; cada
+     cosa que se pida a otro servidor es una oportunidad de que el
+     visitante se quede viendo una pantalla en blanco y se vaya.
+     ------------------------------------------------------------------ */
+  :root {
+    --verde:#5DA831; --verde-osc:#4a8a27; --gris:#5A5B5E;
+    --texto:#1d1f22; --suave:#6b7075; --borde:#e2e5e8; --fondo:#f4f6f7;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--gris); background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; text-align: center; line-height: 1.5;
+    margin:0; background:var(--fondo); color:var(--texto);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.5;
   }
-  .caja { max-width: 460px; }
-  img.marca { width: 56px; height: 56px; display: block; margin: 0 auto 14px; }
-  h1 { font-size: 18px; font-weight: 600; margin: 0 0 6px; color: var(--gris); }
-  p { font-size: 14px; margin: 0 0 18px; }
-  .barra { height: 3px; background: #eee; border-radius: 3px; overflow: hidden; margin: 0 0 18px; }
-  .barra i { display: block; height: 100%; width: 40%; background: var(--verde);
-             animation: corre 1.1s ease-in-out infinite; }
-  @keyframes corre { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
-  a.btn { display: inline-block; padding: 11px 20px; border-radius: 8px;
-          background: var(--verde); color: #fff; text-decoration: none; font-size: 15px; font-weight: 600; }
-  .mini { font-size: 12px; color: #8b8c8f; margin-top: 16px; }
-  ol { text-align: left; font-size: 14px; padding-left: 20px; margin: 0 0 18px; }
-  ol li { margin-bottom: 8px; }
-  .oculto { display: none; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #1c1c1e; color: #d7d8da; }
-    h1 { color: #ececee; }
-    .barra { background: #333; }
-    .mini { color: #8b8c8f; }
+  header {
+    background:#fff; border-bottom:3px solid var(--verde);
+    padding:14px 16px; display:flex; align-items:center; gap:12px;
+    position:sticky; top:0; z-index:5;
   }
+  header img { height:26px; width:auto; display:block; }
+  header .rotulo { font-size:12px; color:var(--suave); letter-spacing:.06em; text-transform:uppercase; }
+  main { max-width:620px; margin:0 auto; padding:16px 16px 40px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:14px; padding:18px; margin-bottom:14px; }
+  h1 { font-size:24px; margin:8px 0 10px; line-height:1.25; }
+  h2 { font-size:17px; margin:0 0 4px; }
+  p { margin:0 0 10px; }
+  .intro { text-align:center; }
+  .etiqueta {
+    display:inline-block; background:#e8f4e0; color:var(--verde-osc);
+    border-radius:999px; padding:4px 14px; font-size:13px; font-weight:600; margin-bottom:4px;
+  }
+  label.campo { display:block; font-weight:600; font-size:15px; margin-bottom:2px; }
+  .ayuda { color:var(--suave); font-size:14px; margin:0 0 8px; }
+  .req { color:#c0392b; }
+  input[type=text], input[type=email], input[type=tel], select {
+    width:100%; padding:13px 12px; font-size:16px; font-family:inherit;
+    border:1px solid #c9ced3; border-radius:9px; background:#fff; color:var(--texto);
+  }
+  input:focus, select:focus { outline:2px solid var(--verde); outline-offset:1px; border-color:var(--verde); }
+  /* El campo trampa: invisible para una persona, irresistible para un robot.
+     Se esconde con posición y no con display:none porque muchos robots
+     ignoran lo que está en display:none. */
+  .trampa { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+
+  .familia { border:1px solid var(--borde); border-radius:11px; margin-bottom:10px; overflow:hidden; background:#fff; }
+  .familia > button {
+    width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:#fff; border:0; padding:14px; font:inherit; text-align:left; cursor:pointer; color:inherit;
+  }
+  .familia > button:hover { background:#fafbfb; }
+  .familia .titulo { font-weight:700; }
+  .familia .sub { color:var(--suave); font-size:14px; font-weight:400; }
+  .familia .cuenta {
+    background:var(--verde); color:#fff; border-radius:999px;
+    font-size:12px; font-weight:700; padding:2px 9px; margin-left:6px;
+  }
+  .flecha { color:var(--suave); font-size:13px; flex-shrink:0; }
+  .cuerpo { display:none; padding:0 14px 12px; border-top:1px solid var(--borde); }
+  .familia.abierta .cuerpo { display:block; }
+
+  .equipo { display:flex; gap:11px; align-items:flex-start; padding:12px 0; border-bottom:1px solid #f0f2f3; }
+  .equipo:last-child { border-bottom:0; }
+  .equipo input { width:22px; height:22px; margin:2px 0 0; flex-shrink:0; accent-color:var(--verde); }
+  .equipo .txt { flex:1; min-width:0; }
+  .equipo .nom { font-weight:600; }
+  .equipo .desc { color:var(--suave); font-size:14px; }
+  /* La miniatura va AL LADO y chica. Puesta abajo y grande, seis equipos con foto convierten
+     una familia en una pantalla y media de scroll, y el visitante deja de leer. Aquí la foto
+     hace lo que tiene que hacer: decir "de esto sí hay ficha" y ayudar a reconocerlo. */
+  .equipo figure { margin:0; flex-shrink:0; width:104px; }
+  .equipo img {
+    display:block; width:100%; border-radius:7px;
+    border:1px solid var(--borde); background:#fff;
+  }
+  @media (max-width:360px) { .equipo figure { width:80px; } }
+
+  .aviso { display:flex; gap:10px; align-items:flex-start; font-size:14px; }
+  .aviso input { width:22px; height:22px; margin:1px 0 0; flex-shrink:0; accent-color:var(--verde); }
+  a { color:var(--verde-osc); }
+
+  button.enviar {
+    width:100%; padding:17px; font-size:17px; font-weight:700; font-family:inherit;
+    background:var(--verde); color:#fff; border:0; border-radius:12px; cursor:pointer;
+  }
+  button.enviar:disabled { background:#a9bfa0; cursor:default; }
+  .nota-pie { text-align:center; color:var(--suave); font-size:13px; margin-top:10px; }
+
+  .error { background:#fdecea; border:1px solid #f5c6c2; color:#8a2318; border-radius:9px; padding:12px; margin-bottom:12px; }
+  .oculto { display:none !important; }
+
+  .ficha { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 0; border-bottom:1px solid #f0f2f3; }
+  .ficha:last-child { border-bottom:0; }
+  .ficha a { font-weight:600; text-decoration:none; white-space:nowrap; }
+  .listo { text-align:center; }
+  .listo .marca { font-size:40px; line-height:1; color:var(--verde); }
+
+  footer { text-align:center; color:var(--suave); font-size:12px; padding:0 16px 30px; }
+  @media (max-width:420px) { h1 { font-size:21px; } main { padding:12px 12px 32px; } .card { padding:15px; } }
 </style>
 </head>
 <body>
-  <div class="caja">
-    <img class="marca" src="icono-180.png" alt="Sveltia">
-    <h1>Sistema de Gestión Sveltia</h1>
 
-    <!-- Camino normal: abrir y reenviar -->
-    <div id="normal">
-      <p>Abriendo…</p>
-      <div class="barra"><i></i></div>
-      <!-- Si el navegador bloquea el salto automático, queda el botón. Nunca una
-           pantalla en blanco: eso es lo que hace que la gente crea que se cayó. -->
-      <a class="btn" id="ir" href="https://script.google.com/macros/s/AKfycbw-yLmGQqz-HqHKM-KMtwDiI20OlKYpqKAEpnjZpgdnhJBsj5r1-I8Hm9cX58s5QfKejw/exec">Entrar</a>
-      <p class="mini">Si no avanza en unos segundos, toca “Entrar”.</p>
+<header>
+  <img src="data:image/png;base64,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" alt="Sveltia">
+  <div>
+    <div class="rotulo">Equipo médico estético</div>
+    <div style="font-weight:700;font-size:15px" id="rotulo-evento">Registro de visitantes</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ Pantalla 1: el formulario ============ -->
+  <div id="pantalla-form">
+    <div class="card intro">
+      <span class="etiqueta">Toma tus fichas técnicas</span>
+      <h1>Gracias por visitarnos</h1>
+      <p id="bienvenida" class="ayuda" style="font-size:15px"></p>
     </div>
 
-    <!-- Camino de "quiero dejarlo en mi pantalla de inicio" -->
-    <div id="fijar" class="oculto">
-      <p><b>Para dejar el acceso en tu pantalla de inicio:</b></p>
-      <ol>
-        <li>Toca el botón <b>Compartir</b> de Safari (el cuadrito con la flecha hacia arriba).</li>
-        <li>Baja y elige <b>Añadir a pantalla de inicio</b>.</li>
-        <li>Déjale el nombre <b>Sveltia</b> y toca <b>Añadir</b>.</li>
-      </ol>
-      <p class="mini">Esta página se queda quieta a propósito, para que te dé tiempo de
-      agregarla. Cuando la abras desde el icono, va a entrar al sistema sola.</p>
+    <div id="cerrado" class="card oculto">
+      <p style="margin:0"><b>El registro no está disponible en este momento.</b></p>
+      <p class="ayuda" style="margin:6px 0 0">Pídele la información a cualquiera de nosotros en el stand y te la mandamos en el momento.</p>
+    </div>
+
+    <form id="forma" autocomplete="on" novalidate>
+      <div id="bloques">
+        <div class="card">
+          <label class="campo" for="nombre">1. Tu nombre <span class="req">*</span></label>
+          <p class="ayuda">Como quieres que te llamemos.</p>
+          <input type="text" id="nombre" name="name" maxlength="120" autocomplete="name" placeholder="Ej. Dra. Karen Soria">
+        </div>
+
+        <div class="card">
+          <label class="campo" for="correo">2. Tu correo <span class="req">*</span></label>
+          <p class="ayuda">Es a donde te mandamos las fichas técnicas.</p>
+          <input type="email" id="correo" name="email" maxlength="120" autocomplete="email"
+                 inputmode="email" placeholder="tucorreo@ejemplo.com">
+        </div>
+
+        <div class="card">
+          <label class="campo" for="telefono">3. Tu teléfono <span class="ayuda" style="display:inline;font-weight:400">(opcional)</span></label>
+          <p class="ayuda">Solo si prefieres que te contactemos por ahí. A 10 dígitos.</p>
+          <input type="tel" id="telefono" name="tel" maxlength="20" autocomplete="tel"
+                 inputmode="numeric" placeholder="55 1234 5678">
+          <div style="margin-top:14px">
+            <label class="campo" for="clinica">Tu consultorio o clínica <span class="ayuda" style="display:inline;font-weight:400">(opcional)</span></label>
+            <input type="text" id="clinica" name="organization" maxlength="120" autocomplete="organization" placeholder="Nombre del consultorio">
+          </div>
+        </div>
+
+        <div class="card oculto" id="caja-evento">
+          <label class="campo" for="evento">¿En qué evento nos visitaste? <span class="req">*</span></label>
+          <p class="ayuda">Hoy estamos en más de uno; dinos cuál para mandarte lo correcto.</p>
+          <select id="evento"></select>
+        </div>
+
+        <div class="card">
+          <label class="campo">Marca lo que te interesó <span class="req">*</span></label>
+          <p class="ayuda">Toca una familia para ver los equipos. Puedes marcar los que quieras.</p>
+          <div id="familias"></div>
+        </div>
+
+        <!-- Campo trampa. No lo quites: es lo que separa a una persona de un robot. -->
+        <div class="trampa" aria-hidden="true">
+          <label for="apellido2">Deja este campo vacío</label>
+          <input type="text" id="apellido2" name="apellido2" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="card">
+          <!-- La liga va FUERA del <label> a propósito. Adentro, el navegador tiene que decidir
+               entre seguir la liga y marcar la casilla, y esa pelea la gana uno u otro según el
+               navegador: en Safari de iPhone lo normal es que la liga no abra nada y el visitante
+               acabe marcando la casilla sin querer, justo en el único lugar de la página donde
+               eso importa. -->
+          <label class="aviso" for="acepto">
+            <input type="checkbox" id="acepto">
+            <span>
+              Acepto que Sveltia use mis datos para enviarme la información que pedí y darme
+              seguimiento comercial.
+            </span>
+          </label>
+          <p class="ayuda" style="margin:8px 0 0 32px">
+            <a id="liga-aviso" href="https://sveltia.mx" target="_blank" rel="noopener noreferrer">Leer el aviso de privacidad</a>
+          </p>
+        </div>
+
+        <div id="error" class="error oculto"></div>
+
+        <button type="submit" class="enviar" id="btn-enviar">Enviar y ver mis fichas</button>
+        <p class="nota-pie">No compartimos tus datos con nadie más.</p>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Pantalla 2: las fichas ============ -->
+  <div id="pantalla-listo" class="oculto">
+    <div class="card listo">
+      <div class="marca">&#10003;</div>
+      <h1 style="margin-top:6px">Listo</h1>
+      <p class="ayuda" style="font-size:15px">
+        Aquí están tus fichas técnicas. También te las mandamos a
+        <b id="eco-correo"></b> &mdash; si no las ves en unos minutos, revisa tu correo no deseado.
+      </p>
+    </div>
+    <div class="card" id="caja-fichas">
+      <h2>Tus fichas</h2>
+      <div id="fichas"></div>
+    </div>
+    <div class="card intro">
+      <p style="margin:0">¿Quieres precios o una demostración?</p>
+      <p class="ayuda" style="margin:6px 0 0">Búscanos en el stand o responde el correo que acabas de recibir.</p>
     </div>
   </div>
+
+</main>
+
+<footer>
+  Sveltia<sup>&reg;</sup> &middot; equipo m&eacute;dico est&eacute;tico &middot; M&eacute;xico
+</footer>
 
 <script>
 (function () {
   'use strict';
 
-  // La dirección sale del propio botón, que ya la trae escrita en el HTML.
-  // Así funciona aunque el navegador tenga JavaScript apagado —el botón lleva
-  // igual— y no hay dos copias de la dirección que se puedan desincronizar.
-  var boton = document.getElementById('ir');
-  var DESTINO = boton.getAttribute('href');
+  // ------------------------------------------------------------------
+  // LO ÚNICO QUE HAY QUE CAMBIAR EN ESTE ARCHIVO
+  // Pega aquí la dirección de la implementación del sistema, la que
+  // termina en /exec. Sale de Apps Script → Implementar → Administrar
+  // implementaciones → "URL de la aplicación web".
+  // ------------------------------------------------------------------
+  var SISTEMA = 'PEGA_AQUI_LA_URL_QUE_TERMINA_EN_EXEC';
 
-  // Se conserva lo que venga después de la dirección. Así siguen sirviendo las
-  // ligas con parámetros, como la de aceptación del cliente (?ace=...) o la de
-  // autorización (?aut=...), si algún día se quieren acortar por aquí.
-  var busca = window.location.search || '';
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+  // Código del gafete que trae puesto quien atendió al visitante (?v=XYZ en la liga).
+  // Solo letras y números, tres o cuatro: es el formato de los códigos del sistema.
+  var VENDEDOR_GAFETE = (function () {
+    try {
+      var m = /[?&]v=([A-Za-z0-9]{2,6})(?:&|$)/.exec(window.location.search || '');
+      return m ? m[1].toUpperCase() : '';
+    } catch (e) { return ''; }
+  })();
 
-  /*
-   * POR QUÉ ESTE ARCHIVO TIENE UN MODO "QUIETO"
-   *
-   * Un iPhone toma el icono y el nombre de la página que está enfrente en el
-   * momento en que le das "Añadir a pantalla de inicio". Como esta página
-   * reenvía al instante, para cuando alguien abre el menú de compartir, Safari
-   * ya está en la página de Google: el acceso queda apuntando a la dirección
-   * larga y con el icono de Google, que no controlamos.
-   *
-   * Con  ?fijar  la página NO reenvía y da tiempo de agregarla. Y cuando se
-   * abre desde el icono ya agregado, iPhone la arranca en modo "aplicación"
-   * (navigator.standalone), y ahí sí reenvía de inmediato: el atajo entra
-   * directo, sin pasos de más.
-   */
-  var desdeElIcono = (window.navigator.standalone === true) ||
-    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  var pidenFijar = /[?&]fijar\b/.test(busca);
+  var abrio = Date.now();
+  var enviando = false;
+  var datos = null;
 
-  if (pidenFijar && !desdeElIcono) {
-    document.getElementById('normal').classList.add('oculto');
-    document.getElementById('fijar').classList.remove('oculto');
-    return;                              // se queda quieta, a propósito
+  // El Content-Type va como text/plain a propósito. Con application/json el navegador manda
+  // antes una petición OPTIONS de verificación que Apps Script no contesta, y el envío falla
+  // desde el teléfono aunque funcione perfecto desde una terminal. Es la trampa clásica de
+  // este montaje y cuesta una tarde descubrirla.
+  function pedir(cuerpo) {
+    return fetch(SISTEMA, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(cuerpo),
+      redirect: 'follow'
+    }).then(function (r) { return r.json(); });
   }
 
-  // Al reenviar se quita el ?fijar: no tiene nada que hacer del otro lado.
-  var extra = busca.replace(/([?&])fijar\b=?[^&]*/, '$1').replace(/[?&]$/, '').replace(/\?&/, '?');
-  if (extra === '?') extra = '';
-  if (extra && DESTINO.indexOf('?') !== -1) extra = extra.replace('?', '&');
+  function mostrarError(txt) {
+    $('error').textContent = txt;
+    $('error').classList.remove('oculto');
+    $('error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function limpiarError() { $('error').classList.add('oculto'); }
 
-  // replace() y no href: así el botón "atrás" del navegador regresa al sitio
-  // y no vuelve a caer en esta página, que rebotaría en un círculo.
-  window.location.replace(DESTINO + extra);
+  // ---------------- Pintar el formulario ----------------
+  function pintarFamilias(familias) {
+    $('familias').innerHTML = familias.map(function (f, i) {
+      var equipos = f.equipos.map(function (e) {
+        return '<label class="equipo">' +
+          '<input type="checkbox" value="' + esc(e.clave) + '" data-equipo>' +
+          '<span class="txt">' +
+          '<span class="nom">' + esc(e.equipo) + '</span>' +
+          (e.descripcion ? '<span class="desc"><br>' + esc(e.descripcion) + '</span>' : '') +
+          '</span>' +
+          (e.foto ? '<figure><img loading="lazy" alt="" src="' + esc(e.foto) + '"></figure>' : '') +
+          '</label>';
+      }).join('');
+      return '<div class="familia" data-fam="' + i + '">' +
+        '<button type="button" data-abre="' + i + '">' +
+        '<span><span class="titulo">' + esc(f.nombre) + '</span>' +
+        '<span class="cuenta oculto" data-cuenta="' + i + '">0</span>' +
+        (f.descripcion ? '<br><span class="sub">' + esc(f.descripcion) + '</span>' : '') + '</span>' +
+        '<span class="flecha" data-flecha="' + i + '">&#9660;</span>' +
+        '</button><div class="cuerpo">' + equipos + '</div></div>';
+    }).join('');
+
+    // Si Drive no sirve la miniatura de una ficha, la tarjeta se queda sin foto y ya. Nunca
+    // con el ícono roto: una imagen rota se ve como si el sitio estuviera descompuesto.
+    Array.prototype.forEach.call($('familias').querySelectorAll('.equipo img'), function (img) {
+      img.addEventListener('error', function () {
+        if (img.parentNode) img.parentNode.style.display = 'none';
+      });
+    });
+
+    Array.prototype.forEach.call($('familias').querySelectorAll('[data-abre]'), function (b) {
+      b.addEventListener('click', function () {
+        b.parentNode.classList.toggle('abierta');
+        var abierta = b.parentNode.classList.contains('abierta');
+        $('familias').querySelector('[data-flecha="' + b.getAttribute('data-abre') + '"]').innerHTML = abierta ? '&#9650;' : '&#9660;';
+      });
+    });
+    // El contador de cada familia sirve para que, con las familias cerradas, se vea de un
+    // golpe qué marcó. Sin él, cerrar una familia se siente como perder lo que ya marcaste.
+    Array.prototype.forEach.call($('familias').querySelectorAll('[data-equipo]'), function (c) {
+      c.addEventListener('change', function () {
+        Array.prototype.forEach.call($('familias').querySelectorAll('.familia'), function (fam) {
+          var n = fam.querySelectorAll('[data-equipo]:checked').length;
+          var eti = fam.querySelector('[data-cuenta]');
+          eti.textContent = n;
+          eti.classList.toggle('oculto', n === 0);
+        });
+      });
+    });
+  }
+
+  function arrancar() {
+    pedir({ accion: 'expo-inicio' }).then(function (r) {
+      if (!r || !r.ok) throw new Error((r && r.error) || 'No pude cargar el formulario.');
+      datos = r;
+      $('bienvenida').textContent = r.bienvenida || 'Déjanos tus datos y te mandamos las fichas técnicas de lo que te interesó.';
+      // Una liga sin http:// adelante NO es una liga: el navegador la toma como si fuera una
+      // página de este mismo sitio y acaba abriendo expo.sveltia.mx otra vez. Como el valor lo
+      // escribe una persona en una celda de la hoja, aquí se completa en lugar de confiar.
+      var liga = String(r.ligaAviso || '').trim();
+      // Se completa el https:// SOLO cuando lo que hay parece un dominio (trae un punto antes
+      // de la primera diagonal). Un valor como "/aviso-de-privacidad" no dice de qué sitio es,
+      // y adivinarlo sería mandar al médico a una dirección inventada con el aviso legal.
+      if (liga && !/^https?:\/\//i.test(liga)) {
+        liga = /^[^\/\s]+\.[^\/\s]+/.test(liga) ? ('https://' + liga) : '';
+      }
+      if (liga) {
+        $('liga-aviso').href = liga;
+      } else {
+        // Sin aviso publicado no debería ni abrir el formulario, pero si algo lo dejara pasar,
+        // más vale texto sin liga que una liga que no lleva a ningún lado.
+        $('liga-aviso').outerHTML = 'Pídenos el aviso de privacidad en el stand.';
+      }
+
+      if (!r.abierto) {
+        $('cerrado').classList.remove('oculto');
+        $('forma').classList.add('oculto');
+        return;
+      }
+      if (r.eventos.length === 1) {
+        $('rotulo-evento').textContent = r.eventos[0].nombre;
+      } else if (r.eventos.length > 1) {
+        $('caja-evento').classList.remove('oculto');
+        $('evento').innerHTML = '<option value="">Elige uno…</option>' + r.eventos.map(function (e) {
+          return '<option value="' + esc(e.id) + '">' + esc(e.nombre) + (e.ciudad ? ' · ' + esc(e.ciudad) : '') + '</option>';
+        }).join('');
+      }
+      pintarFamilias(r.familias);
+    }).catch(function (e) {
+      mostrarError('No pude cargar el formulario. Revisa tu conexión y vuelve a entrar. (' + e.message + ')');
+    });
+  }
+
+  // ---------------- Enviar ----------------
+  $('forma').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (enviando) return;
+    limpiarError();
+
+    var equipos = Array.prototype.map.call(
+      $('familias').querySelectorAll('[data-equipo]:checked'), function (c) { return c.value; });
+
+    // Se revisa aquí para contestarle al visitante de inmediato, sin esperar el viaje de ida
+    // y vuelta. El servidor vuelve a revisar todo: esto es cortesía, no seguridad.
+    if ($('nombre').value.trim().length < 3) return mostrarError('Escribe tu nombre.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('correo').value.trim())) return mostrarError('Revisa tu correo: así como está no lo vamos a poder alcanzar.');
+    if (!equipos.length) return mostrarError('Marca al menos un equipo para saber qué mandarte.');
+    if (datos && datos.eventos.length > 1 && !$('evento').value) return mostrarError('Dinos en qué evento nos visitaste.');
+    if (!$('acepto').checked) return mostrarError('Para poder mandarte la información necesitamos que aceptes el aviso de privacidad.');
+
+    enviando = true;
+    $('btn-enviar').disabled = true;
+    $('btn-enviar').textContent = 'Enviando…';
+
+    pedir({
+      accion: 'expo-lead',
+      nombre: $('nombre').value.trim(),
+      correo: $('correo').value.trim(),
+      telefono: $('telefono').value.trim(),
+      clinica: $('clinica').value.trim(),
+      equipos: equipos,
+      evento: $('evento').value || '',
+      consentimiento: true,
+      trampa: $('apellido2').value,
+      segundos: Math.round((Date.now() - abrio) / 1000),
+      // El código del gafete de quien trae la credencial: expo.sveltia.mx/?v=XYZ
+      // Se limpia aquí a lo que de verdad puede ser un código, para no mandarle basura al
+      // servidor desde una liga que cualquiera puede escribir a mano. Si viene mal o no viene,
+      // va vacío y el prospecto cae en "Por asignar", como siempre: el registro NUNCA se
+      // detiene por el código.
+      v: VENDEDOR_GAFETE,
+      // Si el envío se va por un túnel y el visitante le pica otra vez, este identificador
+      // impide que nazcan dos prospectos del mismo registro.
+      idLocal: 'expo-' + abrio + '-' + Math.random().toString(36).slice(2, 10)
+    }).then(function (r) {
+      if (!r || !r.ok) throw new Error((r && r.error) || 'No se pudo completar el registro.');
+      $('eco-correo').textContent = r.correo || $('correo').value.trim();
+      if (r.fichas && r.fichas.length) {
+        $('fichas').innerHTML = r.fichas.map(function (f) {
+          return '<div class="ficha"><span>' + esc(f.equipo) + '</span>' +
+            '<a href="' + esc(f.ver) + '" target="_blank" rel="noopener">Ver ficha &rarr;</a></div>';
+        }).join('');
+      } else {
+        // Puede pasar: un equipo sin ficha cargada todavía. Más vale decirlo que enseñar una
+        // caja vacía y que el visitante crea que algo falló.
+        $('caja-fichas').innerHTML = '<p style="margin:0">Te mandamos la información por correo en un momento.</p>';
+      }
+      $('pantalla-form').classList.add('oculto');
+      $('pantalla-listo').classList.remove('oculto');
+      window.scrollTo(0, 0);
+    }).catch(function (e) {
+      enviando = false;
+      $('btn-enviar').disabled = false;
+      $('btn-enviar').textContent = 'Enviar y ver mis fichas';
+      mostrarError(e.message);
+    });
+  });
+
+  arrancar();
 })();
 </script>
 </body>
