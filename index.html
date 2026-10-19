@@ -1,176 +1,134 @@
 <!doctype html>
-<!-- ===========================================================================
-     ███  ESTE ARCHIVO ES DE  sgs.sveltia.mx  ███
-     El ATAJO al Sistema de Gestión. NO es el formulario de la expo.
-
-     Si en esta carpeta hay icono-180.png, icono-192.png, icono-512.png y
-     manifest.webmanifest, estás en el repositorio CORRECTO para este archivo.
-
-     El de expo.sveltia.mx es otro archivo, también llamado index.html, y vive
-     en un repositorio distinto donde NO hay iconos ni manifest.
-     =========================================================================== -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sistema de Gestión Sveltia</title>
-
-<!-- =====================================================================
-     ATAJO sgs.sveltia.mx  →  Sistema de Gestión (Apps Script)
-
-     >>> LO ÚNICO QUE SE EDITA DE ESTE ARCHIVO ES EL href DEL BOTÓN "Entrar"
-     >>> (búscalo abajo: id="ir"). Está en UN solo lugar a propósito, y de ahí
-     >>> lo lee también el salto automático: así no existe la posibilidad de
-     >>> cambiar uno y olvidar el otro.
-     >>> Tiene que ser EXACTAMENTE lo que dice la clave URL_APP de la hoja
-     >>> Config del Sistema de Gestión. Esa es la fuente de la verdad: si
-     >>> algún día se publica una implementación NUEVA (no una versión
-     >>> nueva de la misma), la dirección cambia y hay que actualizarla aquí.
-
-     ARCHIVOS QUE ACOMPAÑAN A ESTE, todos en la misma carpeta:
-       icono-180.png ........ el que usa iPhone
-       icono-192.png ........ el que usa Android
-       icono-512.png ........ el grande, para las dos
-       manifest.webmanifest . el que hace que Android tome el icono y el nombre
-     Sin ellos, el teléfono pone un cuadro gris con la inicial del título.
-
-     Se pide a los buscadores que NO lo indexen: es una herramienta interna.
-     Eso no la protege —la protege el PIN— pero evita que ande de paseo.
-     ===================================================================== -->
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-
-<!-- El icono del teléfono. iPhone pide exactamente 180x180 y SIN transparencia:
-     lo transparente se le vuelve negro al aplicar la esquina redondeada. -->
-<link rel="apple-touch-icon" href="icono-180.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icono-512.png">
-<link rel="icon" type="image/png" sizes="180x180" href="icono-180.png">
-
-<!-- ANDROID. Chrome NO usa el apple-touch-icon: saca el icono y el nombre de
-     este archivo. Sin él, el acceso en la pantalla de inicio sale con la
-     inicial en un círculo gris, igual que pasaba en el iPhone.
-     Ahí dentro está start_url = "/", que es lo que abre el acceso: así el
-     icono entra directo al sistema aunque se haya agregado desde ?fijar. -->
-<link rel="manifest" href="manifest.webmanifest">
-
-<!-- El nombre debajo del icono. iPhone corta como a los 12 caracteres, así que
-     "Sistema de Gestión Sveltia" se vería "Sistema de G…". -->
-<meta name="apple-mobile-web-app-title" content="Sveltia">
-<meta name="application-name" content="Sveltia">
 <meta name="theme-color" content="#4A9D2C">
+<title>Sistema de Gestión Sveltia</title>
 
-<!-- Esto es lo que permite distinguir, desde el código, si la página se abrió
-     desde el icono de la pantalla de inicio o desde Safari. Ver más abajo. -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
+<!--
+  ATAJO sgs.sveltia.mx → Sistema de Gestión Sveltia
+  Repositorio: sveltiamarketing/sgs · 19-oct-2026
+
+  ===================================================================
+  POR QUÉ SE REESCRIBIÓ: EL MODO APLICACIÓN ERA EL QUE ROMPÍA TODO
+  ===================================================================
+
+  La versión anterior traía esto:
+
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="mobile-web-app-capable" content="yes">
+      <link rel="manifest" href="...">
+
+  …y un bloque que detectaba `navigator.standalone` o
+  `(display-mode: standalone)` para redirigir automáticamente cuando la
+  página se abría desde el icono de la pantalla de inicio.
+
+  Esas tres líneas convierten la página en una "aplicación instalada".
+  Y ahí está la trampa: una aplicación instalada se abre en una ventana
+  CERRADA SOBRE SU PROPIO DOMINIO. Esta página no tiene contenido
+  propio —su único trabajo es mandarte a script.google.com, que es OTRO
+  dominio—, así que la redirección se queda sin a dónde ir y el usuario
+  ve una pantalla en blanco. Reportado desde el stand el 19-oct-2026.
+
+  O sea: la página se rompía justamente en el caso para el que se había
+  instalado. Una página de reenvío NO DEBE SER INSTALABLE. Nunca fue una
+  aplicación; era un letrero que apunta a otro lado, y un letrero no se
+  cuelga en la pantalla de inicio.
+
+  Lo que se quitó, y no se vuelve a poner:
+    · apple-mobile-web-app-capable / mobile-web-app-capable
+    · el manifest
+    · la detección de standalone y su redirección automática
+    · el modo ?fijar, que servía para instalarla (ya no hay qué instalar)
+
+  LO QUE SE CONSERVÓ a propósito:
+    · Funciona SIN JavaScript: el botón trae la dirección en el HTML.
+    · La dirección aparece UNA sola vez, en el href del botón, y de ahí
+      la lee el salto automático. Dos copias se desincronizan.
+    · Conserva los parámetros: sgs.sveltia.mx?ace=…&t=… llega completo.
+    · location.replace y no href: el botón "atrás" regresa al sitio y no
+      rebota en un círculo.
+    · noindex: no tiene por qué salir en Google.
+
+  SI ALGÚN DÍA SE PUBLICA UNA IMPLEMENTACIÓN NUEVA de Apps Script (no
+  una versión nueva de la misma), la dirección /exec cambia y hay que
+  actualizarla AQUÍ también. Debe ser idéntica al valor de la clave
+  URL_APP de la hoja Config del sistema.
+-->
 
 <style>
-  :root { --gris: #5B5B5E; --verde: #4A9D2C; }
+  :root { color-scheme: light dark; }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--gris); background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; text-align: center; line-height: 1.5;
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: #F7F8F8; color: #2B2C2E;
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-align: center;
   }
-  .caja { max-width: 460px; }
-  img.marca { width: 56px; height: 56px; display: block; margin: 0 auto 14px; }
-  h1 { font-size: 18px; font-weight: 600; margin: 0 0 6px; color: var(--gris); }
-  p { font-size: 14px; margin: 0 0 18px; }
-  .barra { height: 3px; background: #eee; border-radius: 3px; overflow: hidden; margin: 0 0 18px; }
-  .barra i { display: block; height: 100%; width: 40%; background: var(--verde);
+  .caja { max-width: 420px; width: 100%; }
+  h1 { font-size: 20px; margin: 0 0 4px; font-weight: 600; letter-spacing: -0.01em; }
+  .marca { font-size: 13px; color: #6B7280; margin: 0 0 20px; }
+  .barra { height: 4px; border-radius: 4px; background: #E3E6E8; overflow: hidden; margin: 0 0 20px; }
+  .barra i { display: block; height: 100%; width: 40%; border-radius: 4px; background: #5DA831;
              animation: corre 1.1s ease-in-out infinite; }
   @keyframes corre { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
-  a.btn { display: inline-block; padding: 11px 20px; border-radius: 8px;
-          background: var(--verde); color: #fff; text-decoration: none; font-size: 15px; font-weight: 600; }
-  .mini { font-size: 12px; color: #8b8c8f; margin-top: 16px; }
-  ol { text-align: left; font-size: 14px; padding-left: 20px; margin: 0 0 18px; }
-  ol li { margin-bottom: 8px; }
-  .oculto { display: none; }
+  .btn {
+    display: inline-block; padding: 13px 26px; border-radius: 8px; background: #5DA831;
+    color: #fff; text-decoration: none; font-weight: 600; font-size: 16px;
+  }
+  .btn:active { background: #4A8A28; }
+  .pie { font-size: 13px; color: #6B7280; margin: 18px 0 0; }
   @media (prefers-color-scheme: dark) {
-    body { background: #1c1c1e; color: #d7d8da; }
-    h1 { color: #ececee; }
-    .barra { background: #333; }
-    .mini { color: #8b8c8f; }
+    body { background: #16181A; color: #E8EAEB; }
+    .marca, .pie { color: #9CA3AF; }
+    .barra { background: #2A2E31; }
   }
 </style>
 </head>
 <body>
   <div class="caja">
-    <img class="marca" src="icono-180.png" alt="Sveltia">
-    <h1>Sistema de Gestión Sveltia</h1>
-
-    <!-- Camino normal: abrir y reenviar -->
-    <div id="normal">
-      <p>Abriendo…</p>
-      <div class="barra"><i></i></div>
-      <!-- Si el navegador bloquea el salto automático, queda el botón. Nunca una
-           pantalla en blanco: eso es lo que hace que la gente crea que se cayó. -->
-      <a class="btn" id="ir" href="https://script.google.com/macros/s/AKfycbw-yLmGQqz-HqHKM-KMtwDiI20OlKYpqKAEpnjZpgdnhJBsj5r1-I8Hm9cX58s5QfKejw/exec">Entrar</a>
-      <p class="mini">Si no avanza en unos segundos, toca “Entrar”.</p>
-    </div>
-
-    <!-- Camino de "quiero dejarlo en mi pantalla de inicio" -->
-    <div id="fijar" class="oculto">
-      <p><b>Para dejar el acceso en tu pantalla de inicio:</b></p>
-      <ol>
-        <li>Toca el botón <b>Compartir</b> de Safari (el cuadrito con la flecha hacia arriba).</li>
-        <li>Baja y elige <b>Añadir a pantalla de inicio</b>.</li>
-        <li>Déjale el nombre <b>Sveltia</b> y toca <b>Añadir</b>.</li>
-      </ol>
-      <p class="mini">Esta página se queda quieta a propósito, para que te dé tiempo de
-      agregarla. Cuando la abras desde el icono, va a entrar al sistema sola.</p>
-    </div>
+    <h1>Sistema de Gestión</h1>
+    <p class="marca">Sveltia</p>
+    <div class="barra" id="barra"><i></i></div>
+    <p id="aviso" style="margin:0 0 18px;font-size:14px;color:#6B7280">Abriendo…</p>
+    <a class="btn" id="entrar"
+       href="https://script.google.com/macros/s/AKfycbw-yLmGQqz-HqHKM-KMtwDiI20OlKYpqKAEpnjZpgdnhJBsj5r1-I8Hm9cX58s5QfKejw/exec">Entrar</a>
+    <p class="pie">Si no abre solo, toca <b>Entrar</b>.</p>
   </div>
 
 <script>
 (function () {
   'use strict';
+  // La dirección sale del href del botón: una sola fuente de verdad.
+  var destino = document.getElementById('entrar').getAttribute('href');
 
-  // La dirección sale del propio botón, que ya la trae escrita en el HTML.
-  // Así funciona aunque el navegador tenga JavaScript apagado —el botón lleva
-  // igual— y no hay dos copias de la dirección que se puedan desincronizar.
-  var boton = document.getElementById('ir');
-  var DESTINO = boton.getAttribute('href');
+  // Se conservan los parámetros que traiga la liga corta, por si algún día se acortan también
+  // las ligas de aceptación del cliente (sgs.sveltia.mx?ace=…&t=…).
+  var q = window.location.search;
+  if (q && q.length > 1) destino += (destino.indexOf('?') === -1 ? '?' : '&') + q.slice(1);
 
-  // Se conserva lo que venga después de la dirección. Así siguen sirviendo las
-  // ligas con parámetros, como la de aceptación del cliente (?ace=...) o la de
-  // autorización (?aut=...), si algún día se quieren acortar por aquí.
-  var busca = window.location.search || '';
+  document.getElementById('entrar').setAttribute('href', destino);
 
-  /*
-   * POR QUÉ ESTE ARCHIVO TIENE UN MODO "QUIETO"
-   *
-   * Un iPhone toma el icono y el nombre de la página que está enfrente en el
-   * momento en que le das "Añadir a pantalla de inicio". Como esta página
-   * reenvía al instante, para cuando alguien abre el menú de compartir, Safari
-   * ya está en la página de Google: el acceso queda apuntando a la dirección
-   * larga y con el icono de Google, que no controlamos.
-   *
-   * Con  ?fijar  la página NO reenvía y da tiempo de agregarla. Y cuando se
-   * abre desde el icono ya agregado, iPhone la arranca en modo "aplicación"
-   * (navigator.standalone), y ahí sí reenvía de inmediato: el atajo entra
-   * directo, sin pasos de más.
-   */
-  var desdeElIcono = (window.navigator.standalone === true) ||
-    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  var pidenFijar = /[?&]fijar\b/.test(busca);
+  // Un respiro antes de saltar: si la redirección falla por cualquier motivo, al usuario le
+  // queda el botón en pantalla en lugar de una página en blanco.
+  setTimeout(function () {
+    try { window.location.replace(destino); }
+    catch (e) { mostrarBoton('No se pudo abrir solo.'); }
+  }, 150);
 
-  if (pidenFijar && !desdeElIcono) {
-    document.getElementById('normal').classList.add('oculto');
-    document.getElementById('fijar').classList.remove('oculto');
-    return;                              // se queda quieta, a propósito
+  // Y si a los 4 segundos seguimos aquí, el salto no sirvió: se quita el "Abriendo…" y se deja
+  // el botón, que es el camino que funciona siempre.
+  setTimeout(function () { mostrarBoton('Toca Entrar para abrir el sistema.'); }, 4000);
+
+  function mostrarBoton(texto) {
+    var b = document.getElementById('barra');
+    if (b) b.style.display = 'none';
+    var a = document.getElementById('aviso');
+    if (a) a.textContent = texto;
   }
-
-  // Al reenviar se quita el ?fijar: no tiene nada que hacer del otro lado.
-  var extra = busca.replace(/([?&])fijar\b=?[^&]*/, '$1').replace(/[?&]$/, '').replace(/\?&/, '?');
-  if (extra === '?') extra = '';
-  if (extra && DESTINO.indexOf('?') !== -1) extra = extra.replace('?', '&');
-
-  // replace() y no href: así el botón "atrás" del navegador regresa al sitio
-  // y no vuelve a caer en esta página, que rebotaría en un círculo.
-  window.location.replace(DESTINO + extra);
 })();
 </script>
 </body>
