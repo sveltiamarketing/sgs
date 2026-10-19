@@ -3,61 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#4A9D2C">
 <title>Sistema de Gestión Sveltia</title>
 
 <!--
-  ATAJO sgs.sveltia.mx → Sistema de Gestión Sveltia
-  Repositorio: sveltiamarketing/sgs · 19-oct-2026
+  =========================================================================
+  ATAJO  sgs.sveltia.mx  →  Sistema de Gestión (Apps Script)
+  Repositorio: sveltiamarketing/sgs · corregido 19-oct-2026
+  =========================================================================
 
-  ===================================================================
-  POR QUÉ SE REESCRIBIÓ: EL MODO APLICACIÓN ERA EL QUE ROMPÍA TODO
-  ===================================================================
+  >>> LO ÚNICO QUE SE EDITA DE ESTE ARCHIVO ES EL href DEL BOTÓN "Entrar"
+  >>> (búscalo abajo: id="ir"). Está en UN solo lugar a propósito, y de ahí
+  >>> lo lee también el salto automático: así no existe la posibilidad de
+  >>> cambiar uno y olvidar el otro.
+  >>> Tiene que ser EXACTAMENTE lo que dice la clave URL_APP de la hoja
+  >>> Config del Sistema de Gestión. Esa es la fuente de la verdad: si
+  >>> algún día se publica una implementación NUEVA (no una versión
+  >>> nueva de la misma), la dirección cambia y hay que actualizarla aquí.
 
-  La versión anterior traía esto:
+  ARCHIVOS QUE ACOMPAÑAN A ESTE, todos en la misma carpeta:
+     icono-180.png ........ el que usa iPhone
+     icono-192.png ........ el que usa Android
+     icono-512.png ........ el grande, para las dos
+  Sin ellos, el teléfono pone un cuadro gris con la inicial del título.
+
+  Se pide a los buscadores que NO lo indexen: es una herramienta interna.
+  Eso no la protege —la protege el PIN— pero evita que ande de paseo.
+
+  -------------------------------------------------------------------------
+  19-oct-2026 · POR QUÉ SE QUITÓ EL MODO APLICACIÓN
+  -------------------------------------------------------------------------
+
+  Este archivo traía tres piezas que lo volvían una "aplicación instalable":
 
       <meta name="apple-mobile-web-app-capable" content="yes">
       <meta name="mobile-web-app-capable" content="yes">
-      <link rel="manifest" href="...">
+      <link rel="manifest" href="manifest.webmanifest">
 
-  …y un bloque que detectaba `navigator.standalone` o
-  `(display-mode: standalone)` para redirigir automáticamente cuando la
+  …más un bloque que detectaba navigator.standalone o
+  (display-mode: standalone) para redirigir automáticamente cuando la
   página se abría desde el icono de la pantalla de inicio.
 
-  Esas tres líneas convierten la página en una "aplicación instalada".
-  Y ahí está la trampa: una aplicación instalada se abre en una ventana
-  CERRADA SOBRE SU PROPIO DOMINIO. Esta página no tiene contenido
-  propio —su único trabajo es mandarte a script.google.com, que es OTRO
-  dominio—, así que la redirección se queda sin a dónde ir y el usuario
-  ve una pantalla en blanco. Reportado desde el stand el 19-oct-2026.
+  LA TRAMPA: una aplicación instalada se abre en una ventana CERRADA SOBRE
+  SU PROPIO DOMINIO. Esta página no tiene contenido propio —su único
+  trabajo es mandarte a script.google.com, que es OTRO dominio—, así que la
+  redirección se quedaba sin a dónde ir y el usuario veía una PANTALLA EN
+  BLANCO. Reportado desde el stand el 19-oct-2026.
 
   O sea: la página se rompía justamente en el caso para el que se había
-  instalado. Una página de reenvío NO DEBE SER INSTALABLE. Nunca fue una
-  aplicación; era un letrero que apunta a otro lado, y un letrero no se
-  cuelga en la pantalla de inicio.
+  instalado. Una página de reenvío NO DEBE SER INSTALABLE: nunca fue una
+  aplicación, es un letrero que apunta a otro lado.
 
-  Lo que se quitó, y no se vuelve a poner:
-    · apple-mobile-web-app-capable / mobile-web-app-capable
-    · el manifest
+  LO QUE SE QUITÓ, y no se vuelve a poner:
+    · apple-mobile-web-app-capable  y  mobile-web-app-capable
+    · <link rel="manifest">   ← el manifest declara display:standalone
     · la detección de standalone y su redirección automática
     · el modo ?fijar, que servía para instalarla (ya no hay qué instalar)
 
-  LO QUE SE CONSERVÓ a propósito:
-    · Funciona SIN JavaScript: el botón trae la dirección en el HTML.
-    · La dirección aparece UNA sola vez, en el href del botón, y de ahí
-      la lee el salto automático. Dos copias se desincronizan.
+  LO QUE SE CONSERVÓ, y es importante que se quede:
+    · LOS ICONOS. apple-touch-icon y los <link rel="icon"> NO tienen nada
+      que ver con el modo aplicación: solo le dicen al teléfono qué dibujo
+      poner. Sin ellos el acceso directo vuelve a salir como un cuadro gris
+      con una letra, que es el problema que estos tres PNG ya resolvieron.
+    · apple-mobile-web-app-title y application-name. Tampoco instalan nada:
+      son nada más el NOMBRE debajo del icono. iPhone corta como a los 12
+      caracteres, por eso dicen "Sveltia" y no "Sistema de Gestión Sveltia".
+    · Funciona SIN JavaScript: el botón trae la dirección escrita.
     · Conserva los parámetros: sgs.sveltia.mx?ace=…&t=… llega completo.
     · location.replace y no href: el botón "atrás" regresa al sitio y no
       rebota en un círculo.
-    · noindex: no tiene por qué salir en Google.
 
-  SI ALGÚN DÍA SE PUBLICA UNA IMPLEMENTACIÓN NUEVA de Apps Script (no
-  una versión nueva de la misma), la dirección /exec cambia y hay que
-  actualizarla AQUÍ también. Debe ser idéntica al valor de la clave
-  URL_APP de la hoja Config del sistema.
+  El archivo manifest.webmanifest se queda en la carpeta pero ya nadie lo
+  referencia. No estorba. Si algún día alguien lo vuelve a conectar, esto
+  se rompe otra vez igual.
+
+  LO QUE SE AGREGÓ: una red de seguridad. Si a los 4 segundos el salto no
+  ocurrió, se quita el "Abriendo…" y queda el botón Entrar en pantalla. El
+  peor caso ya no puede ser una pantalla en blanco; es un botón.
+  =========================================================================
 -->
+
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+
+<!-- Los iconos del teléfono. iPhone pide exactamente 180x180 y SIN
+     transparencia: lo transparente se le vuelve negro al aplicar la
+     esquina redondeada. -->
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icono-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<link rel="icon" type="image/png" sizes="180x180" href="icono-180.png">
+
+<!-- El nombre debajo del icono. NO instala nada: solo es la etiqueta. -->
+<meta name="apple-mobile-web-app-title" content="Sveltia">
+<meta name="application-name" content="Sveltia">
+<meta name="theme-color" content="#4A9D2C">
 
 <style>
   :root { color-scheme: light dark; }
@@ -94,41 +133,43 @@
     <p class="marca">Sveltia</p>
     <div class="barra" id="barra"><i></i></div>
     <p id="aviso" style="margin:0 0 18px;font-size:14px;color:#6B7280">Abriendo…</p>
-    <a class="btn" id="entrar"
+
+    <!-- >>> AQUÍ, Y SOLO AQUÍ, VA LA DIRECCIÓN DEL SISTEMA <<< -->
+    <a class="btn" id="ir"
        href="https://script.google.com/macros/s/AKfycbw-yLmGQqz-HqHKM-KMtwDiI20OlKYpqKAEpnjZpgdnhJBsj5r1-I8Hm9cX58s5QfKejw/exec">Entrar</a>
+
     <p class="pie">Si no abre solo, toca <b>Entrar</b>.</p>
   </div>
 
 <script>
 (function () {
   'use strict';
-  // La dirección sale del href del botón: una sola fuente de verdad.
-  var destino = document.getElementById('entrar').getAttribute('href');
+  var boton = document.getElementById('ir');
+  var destino = boton.getAttribute('href');       // una sola fuente de verdad
 
   // Se conservan los parámetros que traiga la liga corta, por si algún día se acortan también
   // las ligas de aceptación del cliente (sgs.sveltia.mx?ace=…&t=…).
   var q = window.location.search;
   if (q && q.length > 1) destino += (destino.indexOf('?') === -1 ? '?' : '&') + q.slice(1);
+  boton.setAttribute('href', destino);
 
-  document.getElementById('entrar').setAttribute('href', destino);
-
-  // Un respiro antes de saltar: si la redirección falla por cualquier motivo, al usuario le
-  // queda el botón en pantalla en lugar de una página en blanco.
-  setTimeout(function () {
-    try { window.location.replace(destino); }
-    catch (e) { mostrarBoton('No se pudo abrir solo.'); }
-  }, 150);
-
-  // Y si a los 4 segundos seguimos aquí, el salto no sirvió: se quita el "Abriendo…" y se deja
-  // el botón, que es el camino que funciona siempre.
-  setTimeout(function () { mostrarBoton('Toca Entrar para abrir el sistema.'); }, 4000);
-
-  function mostrarBoton(texto) {
+  function soloElBoton(texto) {
     var b = document.getElementById('barra');
     if (b) b.style.display = 'none';
     var a = document.getElementById('aviso');
     if (a) a.textContent = texto;
   }
+
+  // Un respiro antes de saltar: si la redirección falla, al usuario le queda el botón en
+  // pantalla en lugar de una página en blanco.
+  setTimeout(function () {
+    try { window.location.replace(destino); }
+    catch (e) { soloElBoton('No se pudo abrir solo.'); }
+  }, 150);
+
+  // Y si a los 4 segundos seguimos aquí, el salto no sirvió: se quita el "Abriendo…" y queda
+  // el botón, que es el camino que funciona siempre.
+  setTimeout(function () { soloElBoton('Toca Entrar para abrir el sistema.'); }, 4000);
 })();
 </script>
 </body>
